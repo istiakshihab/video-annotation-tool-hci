@@ -1,0 +1,95 @@
+{
+  "_comment": "This is a sample annotation scheme file. Load it via 'Import Scheme' in the app. Fields: name (string), version (string), description (string), levels (array of level objects), hasComment (boolean). Each level has: id (unique key used in annotation objects), label (display name), type ('select' or 'text'), required (boolean, default true). A 'select' level without 'dependsOn' needs an 'options' array [{value, label}]. A dependent 'select' level needs 'dependsOn' (parent level id) and 'optionsByParent' ({parentValue: [{value, label}]}).",
+  "name": "Yunhan Expert Annotation Scheme",
+  "version": "1.0.0",
+  "description": "Annotation scheme for coding expert screen-recording sessions.",
+  "levels": [
+    {
+      "id": "primaryCode",
+      "label": "Primary Code",
+      "type": "select",
+      "required": true,
+      "options": [
+        { "value": "VT", "label": "VT (VIEW TASK)" },
+        { "value": "VC", "label": "VC (VIEW CODE)" },
+        { "value": "VW", "label": "VW (VIEW WEB)" },
+        { "value": "VA", "label": "VA (VIEW APP)" },
+        { "value": "VD", "label": "VD (VIEW DEV TOOLS)" },
+        { "value": "VR", "label": "VR (VIEW RESPONSE)" },
+        { "value": "WC", "label": "WC (WRITE CODE)" },
+        { "value": "TC", "label": "TC (TEST CLI)" },
+        { "value": "IN", "label": "IN (E INTERACTING)" },
+        { "value": "WP", "label": "WP (WRITE PROMPT)" },
+        { "value": "ID", "label": "ID (IDLE)" }
+      ]
+    },
+    {
+      "id": "secondaryCode",
+      "label": "Secondary Code",
+      "type": "select",
+      "required": true,
+      "dependsOn": "primaryCode",
+      "optionsByParent": {
+        "VT": [{ "value": "NO", "label": "NO (NONE)" }],
+        "VC": [{ "value": "NO", "label": "NO (NONE)" }],
+        "VW": [{ "value": "NO", "label": "NO (NONE)" }],
+        "VA": [{ "value": "NO", "label": "NO (NONE)" }],
+        "VD": [{ "value": "NO", "label": "NO (NONE)" }],
+        "VR": [{ "value": "NO", "label": "NO (NONE)" }],
+        "WC": [
+          { "value": "PC", "label": "PC (PASTE CP)" },
+          { "value": "AA", "label": "AA (ACCEPT CP SUG)" },
+          { "value": "IC", "label": "IC (INSERT VIA CP)" },
+          { "value": "PW", "label": "PW (PASTE WEB)" },
+          { "value": "ME", "label": "ME (ENTER/EDIT)" },
+          { "value": "PS", "label": "PS (PASTE SELF)" },
+          { "value": "MS", "label": "MS (MODIFY/DELETE CP SUG)" }
+        ],
+        "TC": [
+          { "value": "TR", "label": "TR (RUN TEST)" },
+          { "value": "TV", "label": "TV (VIEW TEST)" }
+        ],
+        "IN": [
+          { "value": "RQ", "label": "RQ (RESOLVE QUESTION)" },
+          { "value": "PP", "label": "PP (PROMPT PARTICIPANT)" }
+        ],
+        "WP": [
+          { "value": "EP", "label": "EP (ENTER PROMPT)" },
+          { "value": "PT", "label": "PT (PASTE TASK)" },
+          { "value": "PP", "label": "PP (PASTE PREV CP)" },
+          { "value": "PE", "label": "PE (PASTE ERROR)" },
+          { "value": "PC", "label": "PC (ENTER PROMPT AS CODE COMMENT)" }
+        ],
+        "ID": [{ "value": "NO", "label": "NO (NONE)" }]
+      }
+    },
+    {
+      "id": "task",
+      "label": "Task",
+      "type": "select",
+      "required": true,
+      "options": [
+        { "value": "T1", "label": "Task 1" },
+        { "value": "T2", "label": "Task 2" },
+        { "value": "T3", "label": "Task 3" },
+        { "value": "T4", "label": "Task 4" },
+        { "value": "T5", "label": "Task 5" },
+        { "value": "T6", "label": "Task 6" },
+        { "value": "T7", "label": "Task 7" }
+      ]
+    },
+    {
+      "_comment": "Example 4th level demonstrating multi-level capability. This level has no dependency — it always shows the same options regardless of other selections.",
+      "id": "confidence",
+      "label": "Confidence",
+      "type": "select",
+      "required": false,
+      "options": [
+        { "value": "H", "label": "High" },
+        { "value": "M", "label": "Medium" },
+        { "value": "L", "label": "Low" }
+      ]
+    }
+  ],
+  "hasComment": true
+}

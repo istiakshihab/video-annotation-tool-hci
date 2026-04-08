@@ -1,0 +1,101 @@
+import { X, FileText } from 'lucide-react';
+
+function calcDuration(start, end) {
+  function toSecs(ts) {
+    if (!ts) return 0;
+    const parts = ts.split(':').map(Number);
+    if (parts.length === 3) return parts[0]*3600 + parts[1]*60 + parts[2];
+    if (parts.length === 2) return parts[0]*60 + parts[1];
+    return 0;
+  }
+  const diff = toSecs(end) - toSecs(start);
+  if (diff <= 0) return '—';
+  const h = Math.floor(diff/3600), m = Math.floor((diff%3600)/60), s = diff%60;
+  if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+export default function AnnotationTable({ annotations, onEdit, onDelete, editingId }) {
+  const displayRows = [...annotations].reverse();
+
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:'0.5rem' }}>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 0.25rem' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:'0.4rem' }}>
+          <span style={{ fontSize:'0.72rem', color:'var(--text-3)', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.05em' }}>
+            Annotations
+          </span>
+          <span style={{ fontSize:'0.67rem', color:'var(--text-3)', fontStyle:'italic' }}>
+            · click to edit
+          </span>
+        </div>
+        <span style={{
+          fontSize:'0.72rem', fontWeight:600,
+          background:'var(--accent-dim)', color:'var(--accent)',
+          padding:'1px 8px', borderRadius:20,
+          border:'1px solid rgba(99,102,241,0.2)',
+        }}>{annotations.length}</span>
+      </div>
+
+      {annotations.length === 0 ? (
+        <div className="empty-state">
+          <FileText size={28} strokeWidth={1.5} style={{ opacity:0.3, marginBottom:'0.4rem' }} />
+          <div className="empty-text">No annotations yet.<br />Load a video and press <kbd>E</kbd> to start.</div>
+        </div>
+      ) : (
+        <div className="tbl-wrap">
+          <div className="tbl-scroll">
+            <table className="ann-tbl">
+              <thead>
+                <tr>
+                  <th style={{ width:36 }}>#</th>
+                  <th>Start</th>
+                  <th>End</th>
+                  <th>Dur</th>
+                  <th>Primary</th>
+                  <th>Secondary</th>
+                  <th>Task</th>
+                  <th>Comment</th>
+                  <th style={{ width:32 }}></th>
+                </tr>
+              </thead>
+              <tbody>
+                {displayRows.map((ann, i) => {
+                  const num = annotations.length - i;
+                  return (
+                    <tr
+                      key={ann.id}
+                      className={editingId === ann.id ? 'editing-row' : ''}
+                      onClick={() => onEdit(ann)}
+                      style={{ cursor:'pointer' }}
+                    >
+                      <td className="muted">{num}</td>
+                      <td className="mono">{ann.timeStart}</td>
+                      <td className="mono">{ann.timeEnd}</td>
+                      <td className="muted">{calcDuration(ann.timeStart, ann.timeEnd)}</td>
+                      <td><span className="badge badge-p">{ann.primaryCode}</span></td>
+                      <td><span className="badge badge-s">{ann.secondaryCode}</span></td>
+                      <td><span className="task-chip">{ann.featureTask}</span></td>
+                      <td className="muted" style={{ maxWidth:120, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }} title={ann.comment}>
+                        {ann.comment}
+                      </td>
+                      <td onClick={e => e.stopPropagation()}>
+                        <button
+                          className="tbl-del-btn"
+                          onClick={() => window.confirm('Delete this annotation?') && onDelete(ann.id)}
+                          title="Delete"
+                        >
+                          <X size={12} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
