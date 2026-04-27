@@ -3,6 +3,7 @@ import { Sun, Moon, Upload, Download, Database, Layers } from 'lucide-react'
 import VideoPlayer from './components/VideoPlayer'
 import AnnotationModal from './components/AnnotationModal'
 import AnnotationTable from './components/AnnotationTable'
+import EventModal from './components/EventModal'
 import SchemePanel from './components/SchemePanel'
 import SessionPanel from './components/SessionPanel'
 import { exportAnnotationsCsv, timestampToSeconds, secondsToTimestamp } from './utils/exportCsv'
@@ -36,6 +37,8 @@ function App() {
   const [sessionId, setSessionId] = useState(null)
   const [schemePanelOpen, setSchemePanelOpen] = useState(false)
   const [sessionPanelOpen, setSessionPanelOpen] = useState(false)
+  const [eventModalOpen, setEventModalOpen] = useState(false)
+  const [pendingEventTimestamp, setPendingEventTimestamp] = useState(null)
   const csvImportRef = useRef(null)
 
   useEffect(() => {
@@ -61,9 +64,9 @@ function App() {
 
     // If a session is already loaded (from sessions panel) for this video, just seek
     if (sessionId) {
-      const last = annotations[annotations.length - 1]
-      if (last?.timeStart) {
-        setSeekToSeconds(timestampToSeconds(last.timeStart))
+      const lastState = annotations.filter(a => a.type !== 'event').slice(-1)[0]
+      if (lastState?.timeStart) {
+        setSeekToSeconds(timestampToSeconds(lastState.timeStart))
         setTimeout(() => setSeekToSeconds(null), 500)
       }
       return
@@ -79,9 +82,9 @@ function App() {
         setAnnotations(existing.annotations)
         setSegmentStart(existing.segmentStart || '0:00:00')
         setLastTask(existing.lastTask || null)
-        const last = existing.annotations[existing.annotations.length - 1]
-        if (last?.timeStart) {
-          setSeekToSeconds(timestampToSeconds(last.timeStart))
+        const lastState = (existing.annotations || []).filter(a => a.type !== 'event').slice(-1)[0]
+        if (lastState?.timeStart) {
+          setSeekToSeconds(timestampToSeconds(lastState.timeStart))
           setTimeout(() => setSeekToSeconds(null), 500)
         }
         return
@@ -124,6 +127,22 @@ function App() {
     setEditingAnnotation(null)
   }
 
+  const handleMarkEvent = useCallback((timeStr) => {
+    setPendingEventTimestamp(timeStr)
+    setEventModalOpen(true)
+  }, [])
+
+  const handleEventSubmit = useCallback((event) => {
+    setAnnotations(prev => [...prev, event])
+    setEventModalOpen(false)
+    setPendingEventTimestamp(null)
+  }, [])
+
+  const handleEventCancel = useCallback(() => {
+    setEventModalOpen(false)
+    setPendingEventTimestamp(null)
+  }, [])
+
   const handleEdit = (annotation) => {
     setEditingAnnotation(annotation)
     setPendingEnd(annotation.timeEnd)
@@ -152,13 +171,13 @@ function App() {
       const parsed = parseAnnotationsCsv(ev.target.result)
       if (parsed.length === 0) { alert('No valid annotations found in CSV.'); return }
       setAnnotations(parsed)
-      const last = parsed[parsed.length - 1]
-      if (last?.timeEnd) {
-        setSegmentStart(secondsToTimestamp(timestampToSeconds(last.timeEnd) + 1))
-        setLastTask(last.featureTask || null)
+      const lastState = parsed.filter(a => a.type !== 'event').slice(-1)[0]
+      if (lastState?.timeEnd) {
+        setSegmentStart(secondsToTimestamp(timestampToSeconds(lastState.timeEnd) + 1))
+        setLastTask(lastState.featureTask || null)
       }
-      if (last?.timeStart) {
-        setSeekToSeconds(timestampToSeconds(last.timeStart))
+      if (lastState?.timeStart) {
+        setSeekToSeconds(timestampToSeconds(lastState.timeStart))
         setTimeout(() => setSeekToSeconds(null), 500)
       }
     }
@@ -208,6 +227,7 @@ function App() {
         <div className="nav-actions">
           <div className="nav-shortcuts d-none d-md-flex">
             <span><kbd>E</kbd> mark end</span>
+            <span><kbd>F</kbd> log event</span>
             <span><kbd>Space</kbd> play/pause</span>
             <span><kbd>Esc</kbd> cancel</span>
           </div>
@@ -263,6 +283,7 @@ function App() {
         <div style={{ flex: '0 0 75%', minWidth: 0, height: '100%', display: 'flex', flexDirection: 'column' }}>
           <VideoPlayer
             onMarkEnd={handleMarkEnd}
+            onMarkEvent={handleMarkEvent}
             segmentStart={segmentStart}
             seekToSeconds={seekToSeconds}
             onVideoLoad={handleVideoLoad}
@@ -287,6 +308,14 @@ function App() {
         defaultTask={resolvedDefaultTask}
         onSubmit={handleModalSubmit}
         onCancel={handleModalCancel}
+      />
+
+      <EventModal
+        key={pendingEventTimestamp}
+        open={eventModalOpen}
+        timestamp={pendingEventTimestamp || ''}
+        onSubmit={handleEventSubmit}
+        onCancel={handleEventCancel}
       />
 
       <SchemePanel

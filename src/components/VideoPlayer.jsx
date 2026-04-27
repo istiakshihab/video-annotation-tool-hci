@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import {
   Play, Pause, Volume2, Volume1, VolumeX,
-  FolderOpen, Maximize, Minimize, Square,
+  FolderOpen, Maximize, Minimize, Square, Flag,
   Film, SkipBack, SkipForward
 } from 'lucide-react';
 
@@ -31,12 +31,13 @@ const IBtn = ({ onClick, children, title, style }) => (
   }}>{children}</button>
 );
 
-export default function VideoPlayer({ onMarkEnd, segmentStart, seekToSeconds, onVideoLoad }) {
+export default function VideoPlayer({ onMarkEnd, onMarkEvent, segmentStart, seekToSeconds, onVideoLoad }) {
   const videoRef   = useRef(null);
   const fileRef    = useRef(null);
   const theaterRef = useRef(null);
   const hideTimer  = useRef(null);
-  const markEndRef = useRef(null);
+  const markEndRef   = useRef(null);
+  const markEventRef = useRef(null);
 
   const [src, setSrc]             = useState(null);
   const [playing, setPlaying]     = useState(false);
@@ -120,12 +121,23 @@ export default function VideoPlayer({ onMarkEnd, segmentStart, seekToSeconds, on
     onMarkEnd(fmtFull(v.currentTime));
   }, [onMarkEnd]);
 
-  markEndRef.current = doMarkEnd;
+  const doMarkEvent = useCallback(() => {
+    const v = videoRef.current;
+    if (!v || !onMarkEvent) return;
+    v.pause();
+    onMarkEvent(fmtFull(v.currentTime));
+  }, [onMarkEvent]);
+
+  useEffect(() => {
+    markEndRef.current   = doMarkEnd;
+    markEventRef.current = doMarkEvent;
+  });
 
   useEffect(() => {
     const onKey = (e) => {
       if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
       if (e.key === 'e' || e.key === 'E') { markEndRef.current(); return; }
+      if (e.key === 'f' || e.key === 'F') { markEventRef.current?.(); return; }
       if (e.key === ' ') { e.preventDefault(); togglePlay(); }
     };
     window.addEventListener('keydown', onKey);
@@ -294,12 +306,19 @@ export default function VideoPlayer({ onMarkEnd, segmentStart, seekToSeconds, on
         </div>
       </div>
 
-      {/* Mark End */}
-      <button className="yt-mark-end" onClick={doMarkEnd}>
-        <Square size={15} fill="currentColor" />
-        Mark End &amp; Annotate
-        <kbd className="yt-kbd">E</kbd>
-      </button>
+      {/* Mark End + Mark Event */}
+      <div className="yt-mark-bar">
+        <button className="yt-mark-end" onClick={doMarkEnd}>
+          <Square size={15} fill="currentColor" />
+          Mark End &amp; Annotate
+          <kbd className="yt-kbd">E</kbd>
+        </button>
+        <button className="yt-mark-event" onClick={doMarkEvent}>
+          <Flag size={15} />
+          Log Event
+          <kbd className="yt-kbd">F</kbd>
+        </button>
+      </div>
     </div>
   );
 }

@@ -16,15 +16,18 @@ export function timestampToSeconds(ts) {
 }
 
 export function exportAnnotationsCsv(annotations, filename = 'annotations.csv') {
-  // annotations is array of { id, timeStart, timeEnd, primaryCode, primaryLabel, secondaryCode, secondaryLabel, featureTask, comment }
-  // timeStart and timeEnd are stored as H:MM:SS strings directly
-  const header = 'Time Start,Time End,Primary Code,Secondary Code,Task,Comment';
+  // Rows with type='event' are point annotations; all others are duration-coded states.
+  // CSV format: Type,Time Start,Time End,Code,Secondary Code,Task,Comment
+  const header = 'Type,Time Start,Time End,Code,Secondary Code,Task,Comment';
   const rows = annotations.map(a => {
     const comment = (a.comment || '').replace(/,/g, ';'); // escape commas in comments
+    if (a.type === 'event') {
+      return `event,${a.timestamp},,${a.eventLabel || a.eventCode || ''},,,${comment}`;
+    }
     // Support both new (primaryCodeLabel) and old (primaryLabel) annotation formats.
     const primaryLabel   = a.primaryCodeLabel   ?? a.primaryLabel   ?? '';
     const secondaryLabel = a.secondaryCodeLabel ?? a.secondaryLabel ?? '';
-    return `${a.timeStart},${a.timeEnd},${primaryLabel},${secondaryLabel},${a.featureTask || ''},${comment}`;
+    return `state,${a.timeStart},${a.timeEnd},${primaryLabel},${secondaryLabel},${a.featureTask || ''},${comment}`;
   });
   const csv = [header, ...rows].join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });

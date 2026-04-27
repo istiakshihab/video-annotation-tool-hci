@@ -1,4 +1,4 @@
-import { X, FileText } from 'lucide-react';
+import { X, FileText, Flag } from 'lucide-react';
 
 function calcDuration(start, end) {
   function toSecs(ts) {
@@ -17,6 +17,8 @@ function calcDuration(start, end) {
 
 export default function AnnotationTable({ annotations, onEdit, onDelete, editingId }) {
   const displayRows = [...annotations].reverse();
+  const stateCount = annotations.filter(a => a.type !== 'event').length;
+  const eventCount = annotations.filter(a => a.type === 'event').length;
 
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:'0.5rem' }}>
@@ -26,21 +28,31 @@ export default function AnnotationTable({ annotations, onEdit, onDelete, editing
             Annotations
           </span>
           <span style={{ fontSize:'0.67rem', color:'var(--text-3)', fontStyle:'italic' }}>
-            · click to edit
+            · click row to edit
           </span>
         </div>
-        <span style={{
-          fontSize:'0.72rem', fontWeight:600,
-          background:'var(--accent-dim)', color:'var(--accent)',
-          padding:'1px 8px', borderRadius:20,
-          border:'1px solid rgba(99,102,241,0.2)',
-        }}>{annotations.length}</span>
+        <div style={{ display:'flex', gap:'0.3rem' }}>
+          {eventCount > 0 && (
+            <span style={{
+              fontSize:'0.72rem', fontWeight:600,
+              background:'rgba(245,158,11,0.12)', color:'#d97706',
+              padding:'1px 8px', borderRadius:20,
+              border:'1px solid rgba(245,158,11,0.25)',
+            }}>{eventCount} evt</span>
+          )}
+          <span style={{
+            fontSize:'0.72rem', fontWeight:600,
+            background:'var(--accent-dim)', color:'var(--accent)',
+            padding:'1px 8px', borderRadius:20,
+            border:'1px solid rgba(99,102,241,0.2)',
+          }}>{stateCount}</span>
+        </div>
       </div>
 
       {annotations.length === 0 ? (
         <div className="empty-state">
           <FileText size={28} strokeWidth={1.5} style={{ opacity:0.3, marginBottom:'0.4rem' }} />
-          <div className="empty-text">No annotations yet.<br />Load a video and press <kbd>E</kbd> to start.</div>
+          <div className="empty-text">No annotations yet.<br />Load a video and press <kbd>E</kbd> to mark a segment or <kbd>F</kbd> to log an event.</div>
         </div>
       ) : (
         <div className="tbl-wrap">
@@ -52,7 +64,7 @@ export default function AnnotationTable({ annotations, onEdit, onDelete, editing
                   <th>Start</th>
                   <th>End</th>
                   <th>Dur</th>
-                  <th>Primary</th>
+                  <th>Code</th>
                   <th>Secondary</th>
                   <th>Task</th>
                   <th>Comment</th>
@@ -62,6 +74,41 @@ export default function AnnotationTable({ annotations, onEdit, onDelete, editing
               <tbody>
                 {displayRows.map((ann, i) => {
                   const num = annotations.length - i;
+                  const isEvent = ann.type === 'event';
+
+                  if (isEvent) {
+                    return (
+                      <tr key={ann.id} className="event-row">
+                        <td className="muted">{num}</td>
+                        <td className="mono">{ann.timestamp}</td>
+                        <td className="muted">—</td>
+                        <td className="muted">—</td>
+                        <td>
+                          <span style={{ display:'inline-flex', alignItems:'center', gap:'0.3rem' }}>
+                            <Flag size={10} color="#d97706" />
+                            <span className="badge badge-event">{ann.eventCode}</span>
+                          </span>
+                        </td>
+                        <td className="muted" style={{ fontSize:'0.7rem', color:'var(--text-2)', maxWidth:110, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }} title={ann.eventLabel}>
+                          {ann.eventLabel?.split(' — ')[1] ?? ''}
+                        </td>
+                        <td>—</td>
+                        <td className="muted" style={{ maxWidth:120, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }} title={ann.comment}>
+                          {ann.comment}
+                        </td>
+                        <td>
+                          <button
+                            className="tbl-del-btn"
+                            onClick={() => window.confirm('Delete this event?') && onDelete(ann.id)}
+                            title="Delete"
+                          >
+                            <X size={12} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  }
+
                   return (
                     <tr
                       key={ann.id}

@@ -540,21 +540,96 @@ kbd {
 .yt-speed-opt:hover { background: rgba(255,255,255,0.08); }
 .yt-speed-opt.active { color: var(--accent); font-weight: 600; }
 
+.yt-mark-bar {
+  display: flex; flex-shrink: 0;
+}
 .yt-mark-end {
   display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-  width: 100%; padding: 0.6rem 1rem;
+  flex: 1; padding: 0.6rem 1rem;
   background: var(--danger); color: #fff;
   border: none; font-size: 0.875rem; font-weight: 600;
   font-family: var(--font); cursor: pointer;
   transition: background var(--transition); letter-spacing: 0.01em;
-  flex-shrink: 0;
 }
 .yt-mark-end:hover { background: var(--danger-hover); }
+
+.yt-mark-event {
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  background: rgba(245,158,11,0.15); color: #d97706;
+  border: none; border-left: 1px solid rgba(245,158,11,0.25);
+  font-size: 0.875rem; font-weight: 600;
+  font-family: var(--font); cursor: pointer;
+  transition: background var(--transition); letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.yt-mark-event:hover { background: rgba(245,158,11,0.28); }
+[data-theme="dark"] .yt-mark-event { color: #fbbf24; background: rgba(245,158,11,0.1); }
+[data-theme="dark"] .yt-mark-event:hover { background: rgba(245,158,11,0.2); }
 .yt-kbd {
   background: rgba(255,255,255,0.2); border: none;
   border-radius: 3px; font-size: 0.65rem;
   padding: 1px 5px; color: #fff; font-family: var(--font);
 }
+
+/* ── Warning button ────────────────────────────── */
+.btn-warning { background: var(--warning); color: #fff; }
+.btn-warning:hover { filter: brightness(0.9); }
+.btn-warning:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ── Event code picker (EventModal) ────────────── */
+.event-code-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+.event-code-btn {
+  display: flex; flex-direction: column; align-items: flex-start;
+  padding: 0.42rem 0.65rem;
+  background: var(--bg-raised); border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer; text-align: left;
+  transition: all var(--transition); gap: 0.05rem;
+  font-family: var(--font);
+}
+.event-code-btn:hover {
+  border-color: var(--warning);
+  background: rgba(245,158,11,0.08);
+}
+.event-code-btn.selected {
+  border-color: var(--warning);
+  background: rgba(245,158,11,0.12);
+  box-shadow: 0 0 0 2px rgba(245,158,11,0.18);
+}
+.event-code-val {
+  font-family: var(--mono); font-size: 0.72rem; font-weight: 700;
+  color: var(--warning);
+}
+.event-code-name {
+  font-size: 0.67rem; color: var(--text-2); line-height: 1.2;
+}
+.event-desc {
+  font-size: 0.72rem; color: var(--text-2); line-height: 1.45;
+  background: rgba(245,158,11,0.06);
+  border: 1px solid rgba(245,158,11,0.18);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.65rem;
+  margin-bottom: 0.1rem;
+}
+
+/* ── Event badge (table) ───────────────────────── */
+.badge-event {
+  background: rgba(245,158,11,0.12); color: #d97706;
+  border: 1px solid rgba(245,158,11,0.28);
+}
+[data-theme="dark"] .badge-event { color: #fbbf24; background: rgba(245,158,11,0.15); }
+
+/* ── Event table row ───────────────────────────── */
+.ann-tbl tbody tr.event-row { background: rgba(245,158,11,0.04); }
+.ann-tbl tbody tr.event-row:hover { background: rgba(245,158,11,0.09); }
+[data-theme="dark"] .ann-tbl tbody tr.event-row { background: rgba(245,158,11,0.06); }
+[data-theme="dark"] .ann-tbl tbody tr.event-row:hover { background: rgba(245,158,11,0.12); }
 .seg-badge {
   display: inline-flex; align-items: center; gap: 0.4rem;
   padding: 3px 10px 3px 7px;
